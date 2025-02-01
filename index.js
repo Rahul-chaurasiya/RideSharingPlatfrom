@@ -16,8 +16,8 @@ async function main() {
 }
 
 main().then(() => {
-  console.log("connecton successful")
-}).catch((err) => {
+  console.log("connecton successful") 
+}).catch((err) => { 
   console.log(err);
 })
 
@@ -34,7 +34,7 @@ function isAuthenticated(req, res, next) {
 
 app.use(
   session({
-    secret: "gammaedge",
+    secret: "rahul@123",
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 600000 },

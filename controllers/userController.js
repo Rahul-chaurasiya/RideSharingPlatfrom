@@ -12,9 +12,7 @@ const Default = (req, res) => {
     console.log("I have successfully imported the app and port");
 }
 
-
-
-const getUsers = async (req, res) => {
+const getUsers = async (req, res) => { 
     if (req.session.user.role == 'ADMIN') {
         console.log();
         let users = await User.find();
@@ -24,7 +22,7 @@ const getUsers = async (req, res) => {
         console.log("You are not an admin")
         res.send("Only Admin has access to this page... \n First LogIn as ADMIN: http://localhost:8080/login")
     }
-}
+} 
 
 const signup = (req, res) => {
     let { name, email, password, role, phone, profilePicture} = req.body;
