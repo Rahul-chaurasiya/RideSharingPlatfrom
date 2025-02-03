@@ -50,7 +50,7 @@ const ride = async (req, res) => {
         return res.status(400).json({ error: "Both pickup and dropoff locations are required." });
     }
 
-    try { 
+    try {
         // Get coordinates for the locations
         const location1 = await getCoordinates(pickupLocation);
         const location2 = await getCoordinates(dropoffLocation);
@@ -83,7 +83,7 @@ const ride = async (req, res) => {
             console.log(res);
         }).catch((err) => {
             console.log(err)
-        }) 
+        })
 
         res.json({
             message: "Ride booked successfully!",
@@ -97,7 +97,7 @@ const ride = async (req, res) => {
     }
 }
 
-const requestedrides = async (req, res) => { 
+const requestedrides = async (req, res) => {
     if (req.session.user.role == 'ADMIN' || req.session.user.role == 'DRIVER') {
         let rides = await Ride.find();
         res.send({ message: "data", ride: rides })
@@ -108,11 +108,28 @@ const requestedrides = async (req, res) => {
     }
 }
 
-const acceptride = async(req,res)=>{
-    const { id } = req.params;
-    console.log(id);
-    res.send(id);
+const acceptride = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const ride = await Ride.findById(id);
+
+        if (!ride) {
+            return res.status(404).json({ error: 'Ride not found' });
+        }
+
+        if (ride.status !== 'REQUESTED') {
+            return res.status(400).json({ error: 'Ride cannot be accepted. Current status: ' + ride.status });
+        }
+
+        ride.status = 'ACCEPTED';
+        await ride.save();
+
+        res.json({ message: 'Ride status updated to ACCEPTED', ride });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
 
-module.exports = {ride, requestedrides, acceptride} 
+module.exports = { ride, requestedrides, acceptride } 

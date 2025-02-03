@@ -4,6 +4,6 @@ const router = express.Router()
 
 router.post('/', ride)
 router.get('/', requestedrides)
-router.get('/', acceptride);
+router.get('/:id', acceptride);
 
 module.exports = router;

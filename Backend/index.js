@@ -94,11 +94,7 @@ app.use("/ride", isAuthenticated, jsonParser, rideRouter);
 app.use("/requestedrides", isAuthenticated, rideRouter);
 
 // Accept any ride
-app.get("/requestedrides/:id", isAuthenticated, async(req,res)=>{
-    const { id } = req.params;
-    console.log(id);
-    res.send(id);
-});
+app.use("/requestedrides/:id", isAuthenticated, rideRouter);
 
 // Protected route
 app.get("/dashboard/", isAuthenticated, (req, res) => {
