@@ -1,25 +1,100 @@
 const User = require("../models/User");
 const Ride = require("../models/Ride");
+const axios = require('axios');
 
-const bookride = (req, res) => {
-    let { name, email, password, role, phone } = req.body;
-    let newUser = new User({
-        name: name,
-        email: email,
-        password: password,
-        role: role,
-        phone: phone,
-        // profilePicture: profilePicture==undefined?null:profilePicture,
-        // vehicleDetails: vehicleDetails==undefined?null:vehicleDetails,
-        totalTrips: 0,
-        created_at: new Date(),
-    });
 
-    newUser.save().then((res) => {
-        console.log(res);
-        res.redirect("/");
-    }).catch((err) => {
-        console.log(err)
-    }) 
-    res.send("Email Already Exist \n You can Log In: http://localhost:8080/login")
+
+// Haversine formula to calculate distance
+const EARTH_RADIUS = 6371;
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const toRadians = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return EARTH_RADIUS * c;
 }
+
+// Helper to get coordinates from Nominatim API
+async function getCoordinates(place) {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place)}&format=json&limit=1`;
+
+    try {
+        const response = await axios.get(url);
+        if (response.data.length === 0) {
+            throw new Error(`Could not find coordinates for: ${place}`);
+        }
+        const { lat, lon } = response.data[0];
+        return { lat: parseFloat(lat), lon: parseFloat(lon) };
+    } catch (error) {
+        throw new Error(`Error fetching coordinates for "${place}": ${error.message}`);
+    }
+}
+
+
+const ride = async (req, res) => {
+    let riderId = req.session.user._id;
+    console.log(riderId);
+    if (!riderId) {
+        return res.status(400).json({ error: "Rider not authenticated" });
+    }
+
+    let { pickupLocation, dropoffLocation } = req.body;
+
+    if (!pickupLocation || !dropoffLocation) {
+        return res.status(400).json({ error: "Both pickup and dropoff locations are required." });
+    }
+
+    try { 
+        // Get coordinates for the locations
+        const location1 = await getCoordinates(pickupLocation);
+        const location2 = await getCoordinates(dropoffLocation);
+
+        // Calculate distance
+        const distance = calculateDistance(location1.lat, location1.lon, location2.lat, location2.lon);
+        let fare = 0;
+
+        if (distance <= 15) {
+            fare = distance * 10;
+        } else if (distance > 15 && distance <= 50) {
+            fare = (15 * 10) + ((distance - 15) * 5);
+        } else {
+            fare = (15 * 10) + (35 * 5) + ((distance - 50) * 3);
+        }
+
+        // Save ride in the database
+        const newRide = new Ride({
+            riderId,
+            driverId: null,
+            pickupLocation,
+            dropoffLocation,
+            distance,
+            status: "REQUESTED",
+            fare,
+            paymentStatus: "PENDING"
+        });
+
+        newRide.save().then((res) => {
+            console.log(res);
+        }).catch((err) => {
+            console.log(err)
+        }) 
+
+        res.json({
+            message: "Ride booked successfully!",
+            fare: fare,
+            distance: `${distance.toFixed(2)} km`,
+            rideDetails: newRide
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+module.exports = {ride}
