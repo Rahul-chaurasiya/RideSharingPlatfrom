@@ -5,9 +5,12 @@ const Default = (req, res) => {
         "What Do You Want to Do? Log In OR Sign Up \n " +
         "For Log In : http://localhost:8080/login \n " +
         "For Log Out : http://localhost:8080/logout \n"+
+        "For Dashboard : http://localhost:8080/dashboard \n"+
         "For Sign Up : http://localhost:8080/signup \n" +
         "For Get All Users(Admin Only) : http://localhost:8080/users \n"+
-        "For Update profile(Logged In Only) : http://localhost:8080/edit \n"
+        "For Update profile(Logged In Only) : http://localhost:8080/edit \n"+
+        "For Pending rides : http://localhost:8080/requestedrides \n"+
+        "For Accept any ride : http://localhost:8080/requestedrides/{id} \n"
     );
     console.log("I have successfully imported the app and port");
 }

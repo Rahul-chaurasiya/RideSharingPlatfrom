@@ -89,8 +89,19 @@ app.use("/logout", userRouter);
 // Add a new Ride
 app.use("/ride", isAuthenticated, jsonParser, rideRouter);
 
+
+// See currrent pending rides only for drivers and admin
+app.use("/requestedrides", isAuthenticated, rideRouter);
+
+// Accept any ride
+app.get("/requestedrides/:id", isAuthenticated, async(req,res)=>{
+    const { id } = req.params;
+    console.log(id);
+    res.send(id);
+});
+
 // Protected route
-app.get("/dashboard", isAuthenticated, (req, res) => {
+app.get("/dashboard/", isAuthenticated, (req, res) => {
     res.send(`Welcome to your dashboard, ${req.session.user.name}!`);
 });
 

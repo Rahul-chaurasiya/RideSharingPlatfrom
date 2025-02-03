@@ -97,4 +97,22 @@ const ride = async (req, res) => {
     }
 }
 
-module.exports = {ride}
+const requestedrides = async (req, res) => { 
+    if (req.session.user.role == 'ADMIN' || req.session.user.role == 'DRIVER') {
+        let rides = await Ride.find();
+        res.send({ message: "data", ride: rides })
+        console.log(rides);
+    } else {
+        console.log("You are not an admin")
+        res.send("Only Admin has access to this page... \n First LogIn as ADMIN: http://localhost:8080/login")
+    }
+}
+
+const acceptride = async(req,res)=>{
+    const { id } = req.params;
+    console.log(id);
+    res.send(id);
+}
+
+
+module.exports = {ride, requestedrides, acceptride} 
