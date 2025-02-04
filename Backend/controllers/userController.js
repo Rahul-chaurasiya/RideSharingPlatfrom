@@ -14,7 +14,7 @@ const Default = (req, res) => {
     );
     console.log("I have successfully imported the app and port");
 }
-
+ 
 const getUsers = async (req, res) => { 
     if (req.session.user.role == 'ADMIN') {
         console.log();
@@ -28,8 +28,9 @@ const getUsers = async (req, res) => {
 } 
 
 const signup = (req, res) => {
-    let { name, email, password, role, phone, profilePicture} = req.body;
+    let { name, email, password, role, phone, profilePicture } = req.body;
     profilePicture = profilePicture === undefined || profilePicture === null ? null : profilePicture;
+
     let newUser = new User({
         name: name,
         email: email,
@@ -37,19 +38,22 @@ const signup = (req, res) => {
         role: role,
         phone: phone,
         profilePicture: profilePicture,
-        // vehicleDetails: vehicleDetails==undefined?null:vehicleDetails,
         totalTrips: 0,
         created_at: new Date(),
     });
 
-    newUser.save().then((res) => {
-        console.log(res);
-        res.redirect("/");
-    }).catch((err) => {
-        console.log(err)
-    }) 
-    res.send("Now You can Log In: http://localhost:8080/login")
-}
+    newUser.save()
+    .then((user) => {
+        res.status(201).json({
+            message: "User created successfully!",
+            userId: user._id,
+        });
+    })
+    .catch((err) => {
+        console.error(err);
+        res.status(500).json({ error: "Error creating user." });
+    });
+};
 
 const login = async (req, res) => {
     const { email, password } = req.body;
